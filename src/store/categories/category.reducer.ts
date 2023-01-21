@@ -1,5 +1,12 @@
+import { AnyAction } from "redux";
+
 import { CATEGORIES_ACTION_TYPES, Category } from "./category.types";
-import { CategoryAction } from "./category.action";
+import {
+  CategoryAction,
+  fetchCategoriesStart,
+  fetchCategoriesSuccess,
+  fetchCategoriesFailed,
+} from "./category.action";
 /*
 - Our categories reducer wmust react only to category related actions
 - There are only 3 category action types possible
@@ -23,29 +30,29 @@ export const CATEGORIES_INITIAL_STATE: CategoriesState = {
 
 export const categoriesReducer = (
   state = CATEGORIES_INITIAL_STATE,
-  action = {} as CategoryAction // Discriminatory Union --> will accept action of this union type only
-) => {
-  switch (action.type) {
-    case CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_START:
-      return {
-        ...state,
-        isLoading: true,
-      };
-    case CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_SUCCESS:
-      return {
-        ...state,
-        categories: action.payload,
-        isLoading: false,
-      };
-    case CATEGORIES_ACTION_TYPES.FETCH_CATEGORIES_FAILED:
-      return {
-        ...state,
-        error: action.payload,
-        isLoading: false,
-      };
-    default:
-      return state;
+  //action = {} as CategoryAction // Discriminatory Union --> will accept action of this union type only
+  action = {} as AnyAction
+): CategoriesState => {
+  if (fetchCategoriesStart.match(action)) {
+    return { ...state, isLoading: true };
   }
+
+  if (fetchCategoriesSuccess.match(action)) {
+    return {
+      ...state,
+      categories: action.payload,
+      isLoading: false,
+    };
+  }
+
+  if (fetchCategoriesFailed.match(action)) {
+    return {
+      ...state,
+      error: action.payload,
+      isLoading: false,
+    };
+  }
+  return state;
 };
 /*
 PROBLEM with DISCRIMINATORY UNION in REDUX----------------------------------------------
@@ -55,8 +62,11 @@ PROBLEM with DISCRIMINATORY UNION in REDUX--------------------------------------
   CategoryAction types will pass through this reducer. If we remove the default case in
   switch{} Ts will not throw error because of this
 - This is will cause problems
-- SOLUTION: Use a MatchAble/ Type Predicate Functions
-//https://medium.com/@thomas.laforge/typescript-type-predicate-d9b8c4a15569
+- SOLUTION: Use a Type Predicate Function:
+- Type Predicate functions exist because of unions. Since unions contain multiple types, we 
+  sometimes need to narrow the type. Type predicate function infers the type and returns it.
+  Read this article below
+https://dev.to/daveturissini/aha-understanding-typescript-s-type-predicates-40ha#:~:text=Type%20predicates%20are%20a%20special%20return%20type%20that,Type%20predicates%20are%20expressed%20as%20argumentName%20is%20Type.
 - Since everything, including functions in Js are objects, we can assign addtional properties on them
 - So we will add on to our action creators an additonal duty --> to perform type checking for incoming 
   actions against the action type they themselves hold

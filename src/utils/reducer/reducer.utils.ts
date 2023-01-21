@@ -4,11 +4,33 @@ import { AnyAction } from "redux";
 - Action interface looks a lot like out Action type
 - AnyAction extends that to include additional properties(like payload) 
 */
-
+//https://charlypoly.com/publications/typescript-generics-and-overloads
 type Matchable<AC extends () => AnyAction> = AC & {
   type: ReturnType<AC>["type"];
   match(action: AnyAction): action is ReturnType<AC>;
-}; //AC --> ActionCreator
+}; //AC --> ActionCreator functions in category.action.ts
+//This type Matchable will take an Action creator function and intersect it with the object to give it
+// type and match() keys
+
+//overloading to allow for Actions without and with payloads respectively
+export function withMatcher<AC extends () => AnyAction & { type: string }>(
+  actionCreator: AC
+): Matchable<AC>;
+export function withMatcher<
+  AC extends (...args: any[]) => AnyAction & { type: string }
+>(actionCreator: AC): Matchable<AC>;
+
+//adds "type" value and match() function to any action creator function passed to it
+export function withMatcher(actionCreator: Function) {
+  const type = actionCreator().type;
+  return Object.assign(actionCreator, {
+    //functions are also objects in Js
+    type,
+    match(action: AnyAction) {
+      return action.type === type;
+    },
+  });
+}
 
 //------------INTERSECTION-----------------------------------------------------------
 type Human = {
