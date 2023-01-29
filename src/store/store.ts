@@ -1,7 +1,7 @@
 import { compose, createStore, applyMiddleware, Middleware } from "redux";
-import { persistStore, persistReducer } from "redux-persist";
+import { persistStore, persistReducer, PersistConfig } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-//import logger from "redux-logger";
+import logger from "redux-logger";
 import createSagaMiddleware from "@redux-saga/core";
 
 import { rootSaga } from "./root-saga";
@@ -15,7 +15,13 @@ declare global {
   }
 }
 
-const persistConfig = {
+//PersistConfig already has everything needed
+type ExtendedPersistConfig = PersistConfig<RootState> & {
+  whitelist: (keyof RootState)[];
+}; //keyof returns keys of rootstate
+//So now our whitelist array can only store values that are keys of Rootstate(cart, categories, user)
+
+const persistConfig: ExtendedPersistConfig = {
   key: "root",
   storage: storage,
   whitelist: ["cart"],
@@ -26,9 +32,9 @@ const sagaMiddleware = createSagaMiddleware();
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 const middleWares = [
-  //process.env.NODE_ENV === "development",// && logger,
+  process.env.NODE_ENV === "development" && logger,
   sagaMiddleware,
-]; //.filter((middleware): middleware is Middleware => Boolean(middleware));
+].filter((middleware): middleware is Middleware => Boolean(middleware));
 
 const composeEnhancer =
   (process.env.NODE_ENV === "development" &&

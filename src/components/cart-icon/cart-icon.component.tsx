@@ -6,7 +6,7 @@ import {
 } from "../../store/cart/cart.selector";
 import { setIsCartOpen } from "../../store/cart/cart.action";
 
-import { ReactComponent as ShoppingIcon } from "../../assets/shopping-bag.svg";
+import { ReactComponent as ShoppingIcon } from "../../assets/shopping-bag.svg"; //thiis was throwing error in ts, we built custom.d.ts for this
 
 import { CartIconContainer, ItemCount } from "./cart-icon.styles";
 
